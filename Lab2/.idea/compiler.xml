@@ -6,18 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Lab1" />
         <module name="Lab2" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="Lab1" target="11" />
-      <module name="Lab2" target="11" />
-    </bytecodeTargetLevel>
-  </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Lab2" options="--add-modules java.base" />
-    </option>
   </component>
 </project>
