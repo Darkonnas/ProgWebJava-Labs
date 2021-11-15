@@ -1,0 +1,40 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.com">
+<head>
+    Contacts
+    <title>Contacts</title></head>
+
+<body>
+<form th:action="@{/save}" method="post" th:object="${contact}">
+    <input type="hidden" th:field="*{id}">
+    <fieldset style="width: 700px">
+        <legend>Contacts</legend>
+        <table style="width: 100%">
+            <tr>
+                <td style="text-align: right" nowrap>First name</td>
+                <td style="width: 100%">
+                    <input type="text" th:field="*{firstName}" style="width: 100%">
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right" nowrap>Last name</td>
+                <td style="width: 100%">
+                    <input type="text" th:field="*{lastName}" style="width: 100%">
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: right" nowrap>Email</td>
+                <td style="width: 100%">
+                    <input type="text" th:field="*{email}" style="width: 100%">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 100%; text-align: center">
+                    <input type="submit" value="Save" style="width: 100px">
+                    <input type="button" value="Cancel" style="width: 100px" onclick="window.location='/'">
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+</form>
+</body>
+</html>
