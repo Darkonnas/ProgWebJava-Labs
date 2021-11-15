@@ -9,17 +9,20 @@
         <module name="Lab1" />
         <module name="Lab2" />
         <module name="Lab3" />
+        <module name="Lab4" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Lab1" target="1.8" />
       <module name="Lab2" target="11" />
       <module name="Lab3" target="11" />
+      <module name="Lab4" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Lab2" options="" />
+      <module name="Lab4" options="-parameters" />
     </option>
   </component>
 </project>
