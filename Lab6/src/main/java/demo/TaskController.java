@@ -205,7 +205,7 @@ public class TaskController {
                                               @RequestParam(required = false) TaskModel.Severity severity,
                                               @RequestHeader(required = false, name = "X-Fields") String fields,
                                               @RequestHeader(required = false, name = "X-Sort") String sort,
-                                              @RequestHeader(required = false, name = "Content-Type", defaultValue = "application/json") String contentType) {
+                                              @RequestHeader(name = "Content-Type") String contentType) {
         List<TaskModel> tasks = service.getTasks(title, description, assignedTo, status, severity);
 
         if (tasks.isEmpty()) {
@@ -228,18 +228,18 @@ public class TaskController {
                         formattedString = MapUtil.toXMLString(sparseTasks);
                         break;
                     default:
-                        formattedString = tasks.toString();
+                        return ResponseEntity.badRequest().body("Cannot currently handle content type " + contentType);
                 }
             } else {
                 switch (contentType) {
                     case "text/csv":
-                        formattedString = ObjectUtil.toCSVString(tasks);
+                        formattedString = ObjectUtil.toCSVString(List.copyOf(tasks));
                         break;
                     case "application/xml":
-                        formattedString = ObjectUtil.toXMLString(tasks);
+                        formattedString = ObjectUtil.toXMLString(List.copyOf(tasks));
                         break;
                     default:
-                        formattedString = tasks.toString();
+                        return ResponseEntity.badRequest().body("Cannot currently handle content type " + contentType);
                 }
             }
 
