@@ -15,7 +15,9 @@ public abstract class MapUtil {
                 formattedString.append(String.join(",", item.keySet())).append('\n');
             }
 
-            formattedString.append(item.values().stream().map(Object::toString).collect(Collectors.joining(","))).append('\n');
+            formattedString.append(item.values().stream()
+                    .map(value -> value.toString().contains(",") ? String.format("\"%s\"", value) : value.toString())
+                    .collect(Collectors.joining(","))).append('\n');
         }
 
         return formattedString.toString();

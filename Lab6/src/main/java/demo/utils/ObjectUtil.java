@@ -1,30 +1,20 @@
 package demo.utils;
 
-import demo.TaskModel;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class ObjectUtil {
-    public static String toCSVString(List<TaskModel> items) {
-        StringBuilder formattedString = new StringBuilder();
+    public static String toCSVString(List<Object> items) {
+        StringBuilder formattedString = new StringBuilder(Arrays.stream(items.get(0).getClass().getDeclaredFields())
+                .map(Field::getName)
+                .collect(Collectors.joining(","))).append("\n");
 
-        for (int i = 0; i < items.size(); ++i) {
-            java.lang.Object item = items.get(i);
-
-            if (i == 0) {
-                formattedString.append(Arrays.stream(item.getClass().getDeclaredFields())
-                        .map(Field::getName)
-                        .collect(Collectors.joining(",")));
-            }
-
-            formattedString.append('\n');
-
+        for (Object item : items) {
             Field[] itemFields = item.getClass().getDeclaredFields();
 
-            for (int j = 0; j < itemFields.length; ++j) {
+            for (int i = 0; i < itemFields.length; ++i) {
                 if (i > 0) {
                     formattedString.append(',');
                 }
@@ -43,7 +33,7 @@ public abstract class ObjectUtil {
                     fieldValue = field.get(item).toString();
 
                     if (fieldValue.contains(",")) {
-                        fieldValue = "\"" + fieldValue + "\"";
+                        fieldValue = String.format("\"%s\"", fieldValue);
                     }
                 } catch (IllegalAccessException e) {
                     fieldValue = "";
@@ -55,14 +45,16 @@ public abstract class ObjectUtil {
 
                 formattedString.append(fieldValue);
             }
+
+            formattedString.append('\n');
         }
         return formattedString.toString();
     }
 
-    public static String toXMLString(List<TaskModel> items) {
+    public static String toXMLString(List<Object> items) {
         StringBuilder formattedString = new StringBuilder("<root>\n");
 
-        for (TaskModel item : items) {
+        for (Object item : items) {
             formattedString.append(String.format("<%s>\n", item.getClass().getName()));
 
             for (Field field : item.getClass().getDeclaredFields()) {
