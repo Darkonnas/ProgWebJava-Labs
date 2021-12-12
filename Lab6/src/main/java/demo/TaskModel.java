@@ -1,13 +1,19 @@
 package demo;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 public class TaskModel implements BaseModel {
     private String id = UUID.randomUUID().toString();
+    @NotBlank(message = "Please provide a task title.")
     private String title;
     private String description;
+    @NotBlank(message = "Please assign the task to someone.")
     private String assignedTo;
+    @NotNull(message = "Please provide the task's status.")
     private Status status;
+    @NotNull(message = "Please provide the task's severity.")
     private Severity severity;
 
     public TaskModel() {
