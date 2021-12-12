@@ -1,5 +1,7 @@
 package demo;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -20,6 +22,11 @@ public class Track {
     @JoinColumn(name = "speaker_id", referencedColumnName = "id")
     private Person speaker;
 
+    @ManyToOne
+    @JsonManagedReference
+    @JoinColumn(name = "room_id", referencedColumnName = "id")
+    private Room room;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "attendee",
@@ -31,10 +38,11 @@ public class Track {
     public Track() {
     }
 
-    public Track(String title, String description, Person speaker) {
+    public Track(String title, String description, Person speaker, Room room) {
         this.title = title;
         this.description = description;
         this.speaker = speaker;
+        this.room = room;
     }
 
     public long getId() {
@@ -53,6 +61,10 @@ public class Track {
         return speaker;
     }
 
+    public Room getRoom() {
+        return room;
+    }
+
     public Set<Person> getAttendees() {
         return attendees;
     }
@@ -61,5 +73,6 @@ public class Track {
         this.title = track.title;
         this.description = track.description;
         this.speaker = track.speaker;
+        this.room = track.room;
     }
 }
