@@ -2,6 +2,7 @@ package demo;
 
 import demo.TaskModel.Severity;
 import demo.TaskModel.Status;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -14,9 +15,10 @@ import java.util.stream.Collectors;
 public class TaskService {
     private final TaskRepository repository;
 
-    public TaskService(TaskRepository repository) {
+    public TaskService(@Qualifier("database") TaskRepository repository) {
         this.repository = repository;
     }
+
 
     public List<TaskModel> getTasks(String title, String description, String assignedTo, Status status, Severity severity) {
         return this.repository.findAll().stream().filter((task) -> isMatch(task, title, description, assignedTo, status, severity)).collect(Collectors.toList());
@@ -34,7 +36,7 @@ public class TaskService {
         return this.repository.findById(id);
     }
 
-    public TaskModel addTask (TaskModel task) throws IOException {
+    public TaskModel addTask(TaskModel task) throws IOException {
         repository.save(task);
         return task;
     }
