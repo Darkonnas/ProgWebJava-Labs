@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 public class TaskModel implements BaseModel {
-    private String id = UUID.randomUUID().toString();
+    private String id;
     @NotBlank(message = "Please provide a task title.")
     private String title;
     private String description;
@@ -17,6 +17,16 @@ public class TaskModel implements BaseModel {
     private Severity severity;
 
     public TaskModel() {
+        id = UUID.randomUUID().toString();
+    }
+
+    public TaskModel(String id, String title, String description, String assignedTo, Status status, Severity severity) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.assignedTo = assignedTo;
+        this.status = status;
+        this.severity = severity;
     }
 
     public String getId() {
