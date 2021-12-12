@@ -16,9 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,8 +34,11 @@ import java.util.stream.Collectors;
 public class TaskController {
     private final TaskService service;
 
-    public TaskController(TaskService service) {
+    private final Validator validator;
+
+    public TaskController(TaskService service, Validator validator) {
         this.service = service;
+        this.validator = validator;
     }
 
     @Operation(summary = "Search tasks", operationId = "getTasks")
@@ -98,20 +106,20 @@ public class TaskController {
             @ApiResponse(responseCode = "204", description = "Bulk tasks created")
     })
     @PostMapping
-    public ResponseEntity<Void> addTask(@RequestBody String payload, @RequestHeader(required = false, name = "X-Action") String action) {
-        try {
-            if ("bulk".equals(action)) {
-                for (TaskModel taskModel : new ObjectMapper().readValue(payload, TaskModel[].class)) {
-                    service.addTask(taskModel);
-                }
-                return ResponseEntity.noContent().build();
-            } else {
-                TaskModel taskModel = service.addTask(new ObjectMapper().readValue(payload, TaskModel.class));
-                URI uri = WebMvcLinkBuilder.linkTo(getClass()).slash(taskModel.getId()).toUri();
-                return ResponseEntity.created(uri).build();
+    public ResponseEntity<Void> addTask(@RequestBody String payload, @RequestHeader(required = false, name = "X-Action") String action) throws IOException, ValidationException {
+        if ("bulk".equals(action)) {
+            TaskModel[] tasks = new ObjectMapper().readValue(payload, TaskModel[].class);
+            validate(tasks);
+            for (TaskModel taskModel : tasks) {
+                service.addTask(taskModel);
             }
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.noContent().build();
+        } else {
+            TaskModel task = new ObjectMapper().readValue(payload, TaskModel.class);
+            validate(new Object[]{task});
+            TaskModel taskModel = service.addTask(task);
+            URI uri = WebMvcLinkBuilder.linkTo(getClass()).slash(taskModel.getId()).toUri();
+            return ResponseEntity.created(uri).build();
         }
     }
 
@@ -122,15 +130,11 @@ public class TaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTask(@PathVariable String id, @RequestBody TaskModel task) {
-        try {
-            if (service.updateTask(id, task)) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<Void> updateTask(@PathVariable String id, @Valid @RequestBody TaskModel task) throws IOException {
+        if (service.updateTask(id, task)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -141,15 +145,11 @@ public class TaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<Void> patchTask(@PathVariable String id, @RequestBody TaskModel task) {
-        try {
-            if (service.patchTask(id, task)) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<Void> patchTask(@PathVariable String id, @Valid @RequestBody TaskModel task) throws IOException {
+        if (service.patchTask(id, task)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -160,15 +160,11 @@ public class TaskController {
             @ApiResponse(responseCode = "404", description = "Task not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable String id) {
-        try {
-            if (service.deleteTask(id)) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<Void> deleteTask(@PathVariable String id) throws IOException {
+        if (service.deleteTask(id)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -244,6 +240,18 @@ public class TaskController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.CONTENT_TYPE, contentType).body(formattedString);
+        }
+    }
+
+    private void validate(Object[] objects) throws ValidationException {
+        String message = Arrays.stream(objects)
+                .map(o -> validator.validate(o).stream()
+                        .map(ConstraintViolation::getMessage)
+                        .filter(error -> !error.isBlank())
+                        .collect(Collectors.joining("|"))
+                ).collect(Collectors.joining("|"));
+        if (!message.isBlank()) {
+            throw new ValidationException(message);
         }
     }
 }
